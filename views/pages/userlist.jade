@@ -1,0 +1,45 @@
+extends ../layout
+
+block content
+	.container
+		.row
+			table.table.table-hover.table-bordered
+				thead
+					tr
+						th 注册名
+						th 注册时间
+						th 查看
+						th 修改
+						th 删除
+				tbody
+					each item in users
+						tr(class="item-id-#{item._id}")
+							td= item.name
+							td= item.meta.createAt
+							td
+								a(target="_blank", href="../movie/#{item._id}") 查看
+							td
+								a(target="_blank", href="./update/#{item._id}") 修改
+							td
+								button.btn.btn-danger.del(type="button", data-id="#{item._id}") 删除
+
+	//- script.
+	//- 	$(function() {
+	//- 		$('.del').click(function(e) {
+	//- 			var target = $(e.target);
+	//- 			var id = target.data('id');
+	//- 			var tr = $('.item-id-' + id);
+
+	//- 			$.ajax({
+	//- 				url: '/admin/list/' + id,
+	//- 				type: 'DELETE',
+	//- 			}).done(function(result) {
+	//- 				if (result.success === 1) {
+	//- 					if (tr.length) {
+	//- 						tr.remove();
+	//- 					}
+	//- 				}
+	//- 			});
+				
+	//- 		});
+	//- 	});
