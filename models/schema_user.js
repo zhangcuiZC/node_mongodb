@@ -43,6 +43,17 @@ UserSchema.pre('save', function(next) {
 	});
 });
 
+UserSchema.methods = {
+	comparePassword: function(pass, cb) {
+		bcrypt.compare(pass, this.password, function(err, isMatch) {
+			if (err) {
+				return cb(err);
+			}
+			cb(null, isMatch);
+		});
+	}
+};
+
 UserSchema.statics = {
 	fetch: function(cb) {
 		return this.find({}).sort('meta.updateAt').exec(cb);

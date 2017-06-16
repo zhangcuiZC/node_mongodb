@@ -4,6 +4,10 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var session = require('express-session');
+var MongoStore = require('connect-mongo')(session);
+var mongoose = require('mongoose');
+mongoose.connect('mongodb://localhost/movie');
 
 var index = require('./routes/index');
 var admin = require('./routes/admin');
@@ -21,8 +25,18 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(session({
+	secret: 'zhangcui',
+	store: new MongoStore({
+		mongooseConnection: mongoose.connection
+	})
+}));
 app.use(express.static(path.join(__dirname, 'public')));
-
+app.use(function(req, res, next) {
+	var user = req.session.user;
+	res.locals.user = user;
+	next();
+});
 app.use('/', index);
 app.use('/admin', admin);
 app.use('/user', user);

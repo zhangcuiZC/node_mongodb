@@ -1,11 +1,10 @@
 var express = require('express');
 var router = express.Router();
 var Movie = require('../models/movie');
-var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/movie');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
+	console.log('session:', req.session.user);
 	Movie.fetch(function(err, movies) {
 		if (err) {
 			console.log(err);
