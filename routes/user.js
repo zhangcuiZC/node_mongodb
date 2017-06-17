@@ -67,14 +67,4 @@ router.get('/logout', function(req, res, next) {
 	res.redirect('/');
 });
 
-router.get('/userlist', function(req, res, next) {
-
-	User.fetch(function(err, users) {
-		res.render('pages/userlist', {
-			title: '注册用户列表',
-			users: users
-		});
-	});
-});
-
 module.exports = router;

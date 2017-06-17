@@ -12,6 +12,8 @@ mongoose.connect('mongodb://localhost/movie');
 var index = require('./routes/index');
 var admin = require('./routes/admin');
 var user = require('./routes/user');
+var login_required = require('./libs/mw_login_required');
+var admin_required = require('./libs/mw_admin_required');
 
 var app = express();
 
@@ -38,7 +40,7 @@ app.use(function(req, res, next) {
 	next();
 });
 app.use('/', index);
-app.use('/admin', admin);
+app.use('/admin', login_required, admin_required, admin);
 app.use('/user', user);
 
 // catch 404 and forward to error handler

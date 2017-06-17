@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var Movie = require('../models/movie');
+var User = require('../models/user');
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/movie');
 
@@ -99,6 +100,16 @@ router.delete('/list/:id', function(req, res, next) {
 	}else {
 		res.json({ success: 0 });
 	}
+});
+
+router.get('/userlist', function(req, res, next) {
+
+	User.fetch(function(err, users) {
+		res.render('pages/userlist', {
+			title: '注册用户列表',
+			users: users
+		});
+	});
 });
 
 module.exports = router;
