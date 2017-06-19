@@ -6,6 +6,11 @@ var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/movie');
 
 /* GET admin listing. */
+router.get('/', function(req, res, next) {
+	res.redirect('/admin/list');
+});
+
+
 router.get('/movie', function(req, res, next) {
 	res.render('./pages/admin', {
 		title: '电影录入',
