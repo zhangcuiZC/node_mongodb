@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var Movie = require('../models/movie');
 var User = require('../models/user');
+var Category = require('../models/category');
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/movie');
 
@@ -12,19 +13,26 @@ router.get('/', function(req, res, next) {
 
 
 router.get('/movie', function(req, res, next) {
-	res.render('./pages/admin', {
-		title: '电影录入',
-		movie: {
-			title: '',
-			director: '',
-			year: '',
-			country: '',
-			language: '',
-			poster: '',
-			flash: '',
-			summary: '',
-			_id: ''
+	Category.fetch(function(err, categories) {
+		if (err) {
+			console.log(err);
 		}
+		res.render('./pages/admin', {
+			title: '电影录入',
+			movie: {
+				title: '',
+				director: '',
+				category: '',
+				year: '',
+				country: '',
+				language: '',
+				poster: '',
+				flash: '',
+				summary: '',
+				_id: ''
+			},
+			categories: categories
+		});
 	});
 });
 
@@ -39,16 +47,66 @@ router.post('/movie', function(req, res, next) {
 				console.log(err);
 			}
 			Object.assign(movie, movieObj);
-			movie.save(function(err, movie) {
-				if (err) {
-					console.log(err);
-				}
-				res.redirect('/movie/' + movie._id);
-			});
+
+			if (movieObj.newCategory) {
+				var category = new Category({
+					name: movieObj.newCategory,
+					movies: [movie._id]
+				});
+
+				category.save(function(err, new_category) {
+					movie.category = new_category._id;
+					movie.save(function(err, movie) {
+						Category.findById(movieObj.prev_category, function(err, prev_category) {
+							prev_category.movies.forEach(function(ele, idx) {
+								if (ele.toString() === movie._id.toString()) {
+									prev_category.movies.splice(idx, 1);
+								}
+							});
+							prev_category.save(function(err, prev_category) {
+								if (err) {
+									console.log(err);
+								}
+								res.redirect('/movie/' + movie._id);
+							});
+						});
+					});
+				});
+			}else {
+				movie.save(function(err, movie) {
+					if (err) {
+						console.log(err);
+					}
+					if (movieObj.prev_category.toString() !== movieObj.category.toString()) {
+						Category.findById(movieObj.prev_category, function(err, prev_category) {
+							prev_category.movies.forEach(function(ele, idx) {
+								if (ele.toString() === movie._id.toString()) {
+									prev_category.movies.splice(idx, 1);
+								}
+							});
+							prev_category.save(function(err, prev_category) {
+								Category.findById(movieObj.category, function(err, category) {
+									category.movies.push(movie._id);
+									category.save(function(err, category) {
+										if (err) {
+											console.log(err);
+										}
+										res.redirect('/movie/' + movie._id);
+									});
+								});
+							});
+						});
+					}else {
+						res.redirect('/movie/' + movie._id);
+					}
+				});
+				
+			}
 		});
 	}else {
 		_movie = new Movie({
 			director: movieObj.director,
+			category: movieObj.category,
 			title: movieObj.title,
 			country: movieObj.country,
 			language: movieObj.language,
@@ -57,13 +115,35 @@ router.post('/movie', function(req, res, next) {
 			summary: movieObj.summary,
 			flash: movieObj.flash
 		});
-
-		_movie.save(function(err, movie) {
-			if (err) {
-				console.log(err);
-			}
-			res.redirect('/movie/' + movie._id);
-		});
+		if (movieObj.newCategory) {
+			var category = new Category({
+				name: movieObj.newCategory
+			});
+			category.save(function(err, new_category) {
+				_movie.category = new_category._id;
+				_movie.save(function(err, movie) {
+					new_category.movies.push(movie._id);
+					new_category.save(function(err, new_category) {
+						if (err) {
+							console.log(err);
+						}
+						res.redirect('/movie/' + movie._id);
+					});
+				});
+			});
+		}else {
+			_movie.save(function(err, movie) {
+				Category.findById(movieObj.category, function(err, category) {
+					category.movies.push(movie._id);
+					category.save(function(err, category) {
+						if (err) {
+							console.log(err);
+						}
+						res.redirect('/movie/' + movie._id);
+					});
+				});
+			});
+		}
 	}
 });
 
@@ -71,10 +151,13 @@ router.get('/update/:id', function(req, res, next) {
 	var id = req.params.id;
 	if (id) {
 		Movie.findById(id, function(err, movie) {
-			res.render('./pages/admin', {
-				title: '更新电影信息',
-				movie: movie
-			})
+			Category.fetch(function(err, categories) {
+				res.render('./pages/admin', {
+					title: '更新电影信息',
+					movie: movie,
+					categories: categories
+				});
+			});
 		});
 	}
 });
@@ -115,6 +198,36 @@ router.get('/userlist', function(req, res, next) {
 			users: users
 		});
 	});
+});
+
+router.get('/category', function(req, res, next) {
+	res.render('pages/category', {
+		title: '添加分类',
+		
+	});
+});
+
+router.post('/category', function(req, res, next) {
+	var _category = req.body;
+	var category = new Category({
+		name: _category.category_name
+	});
+
+	category.save(function(err, category) {
+		if (err) {
+			console.log(err);
+		}
+		res.redirect('/admin/catelist');
+	});
+});
+
+router.get('/catelist', function(req, res, next) {
+	Category.fetch(function(err, categories) {
+		res.render('pages/catelist', {
+			title: '分类列表',
+			categories: categories
+		});
+	})
 });
 
 module.exports = router;

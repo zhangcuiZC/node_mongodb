@@ -6,6 +6,25 @@ block content
 			form.form-horizontal(method="post", action="/admin/movie")
 				input(type="hidden", name="_id", value="#{movie._id}")
 				.form-group
+					label.col-sm-2.control-label(for="douban") 豆瓣同步
+					.col-sm-8
+						input#douban.form-control(type="text")
+				.form-group
+					label.col-sm-2.control-label(for="inputNewCategory") 自定分类
+					.col-sm-8
+						input#inputNewCategory.form-control(type="text", name="newCategory")
+				.form-group
+					label.col-sm-2.control-label 电影分类
+					.col-sm-8
+						each cate in categories
+							label.radio-inline
+								if movie.category && movie.category.toString()==cate._id.toString()
+									input(type="hidden", name="prev_category", value="#{movie.category}")
+									input(type="radio", name="category", value="#{cate._id}" checked)
+								else
+									input(type="radio", name="category", value="#{cate._id}")
+								| #{cate.name}
+				.form-group
 					label.col-sm-2.control-label(for="inputTitle") 电影名字
 					.col-sm-8
 						input#inputTitle.form-control(type="text", name="title", value="#{movie.title}")
@@ -40,3 +59,25 @@ block content
 				.form-group
 					.col-sm-offset-2.col-sm-8
 						button.btn.btn-default(type="submit") 录入
+	script.
+		$(function() {
+			$('#douban').change(function(event) {
+				var id = $('#douban').val();
+				if (id) {
+					$.ajax({
+						url: 'http://api.douban.com/v2/movie/subject/' + id,
+						type: 'GET',
+						dataType: 'jsonp',
+						cache: true,
+						success: function(data) {
+							$('#inputTitle').val(data.title);
+							$('#inputDirector').val(data.directors[0].name);
+							$('#inputCountry').val(data.countries.join('/'));
+							$('#inputPoster').val(data.images.large);
+							$('#inputYear').val(data.year);
+							$('#inputSummary').val(data.summary);
+						}
+					});
+				}
+			});
+		});

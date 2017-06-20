@@ -10,7 +10,6 @@ router.get('/', function(req, res, next) {
 		if (err) {
 			console.log(err);
 		}
-		console.log(categories);
 		res.render('pages/index', {
 			title: '首页',
 			categories: categories
