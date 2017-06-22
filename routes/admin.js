@@ -167,10 +167,11 @@ router.get('/list', function(req, res, next) {
 		if (err) {
 			console.log(err);
 		}
-		res.render('pages/list', {
-			title: '电影列表',
-			movies: movies
-		});
+		// res.render('pages/list', {
+		// 	title: '电影列表',
+		// 	movies: movies
+		// });
+		res.json(movies);
 	});
 });
 
@@ -223,10 +224,21 @@ router.post('/category', function(req, res, next) {
 
 router.get('/catelist', function(req, res, next) {
 	Category.fetch(function(err, categories) {
-		res.render('pages/catelist', {
-			title: '分类列表',
-			categories: categories
+		// res.render('pages/catelist', {
+		// 	title: '分类列表',
+		// 	categories: categories
+		// });
+		var categoryList = [];
+		categories.forEach(function(val, idx) {
+			var item = {};
+			item._id = val._id;
+			item.name = val.name;
+			item.movies = val.movies.length;
+			item.meta = val.meta;
+			categoryList.push(item);
 		});
+		console.log(categoryList);
+		res.json(categoryList);
 	})
 });
 
