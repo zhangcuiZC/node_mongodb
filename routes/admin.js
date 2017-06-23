@@ -194,10 +194,11 @@ router.delete('/list/:id', function(req, res, next) {
 router.get('/userlist', function(req, res, next) {
 
 	User.fetch(function(err, users) {
-		res.render('pages/userlist', {
-			title: '注册用户列表',
-			users: users
-		});
+		// res.render('pages/userlist', {
+		// 	title: '注册用户列表',
+		// 	users: users
+		// });
+		res.json(users);
 	});
 });
 

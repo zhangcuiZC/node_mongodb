@@ -8,27 +8,52 @@ var login_required = require('../libs/mw_login_required');
 /* GET user page. */
 router.post('/signup', function(req, res, next) {
 	var _user = req.body;
-
-	User.find({name: _user.signupName}, function(err, user) {
+	User.find({name: _user.name}, function(err, user) {
 		if (err) {
 			console.log(err);
 		}
 
 		if (user.length) {
-			console.log(user);
-			return res.redirect('/');
+			// console.log(user);
+			// return res.redirect('/');
+			res.json({
+				status: 0,
+				msg: '用户名已被注册'
+			})
 		}else {
-			var new_user = new User({
-				name: _user.signupName,
-				password: _user.signupPass 
-			});
+			var new_user = new User(_user);
 
 			new_user.save(function(err, user) {
 				if (err) {
 					console.log(err);
 				}
-				res.redirect('/user/userlist');
+				// res.redirect('/user/userlist');
+				res.json({
+					status: 1,
+					msg: '注册成功'
+				})
 			});
+		}
+	});
+});
+
+// validate a username
+router.post('/validate', function(req, res, next) {
+	var name = req.body;
+	User.find({name: name}, function(err, user) {
+		if (err) {
+			console.log(err);
+		}
+		if (user.length) {
+			res.json({
+				status: 0,
+				msg: 'existed'
+			})
+		}else {
+			res.json({
+				status: 1,
+				msg: 'useable'
+			})
 		}
 	});
 });
