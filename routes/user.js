@@ -60,8 +60,8 @@ router.post('/validate', function(req, res, next) {
 
 router.post('/signin', function(req, res, next) {
 	var _user = req.body;
-	var name = _user.signinName;
-	var pass = _user.signinPass;
+	var name = _user.userName;
+	var pass = _user.password;
 
 	User.findOne({name: name}, function(err, user) {
 		if (err) {
@@ -70,7 +70,7 @@ router.post('/signin', function(req, res, next) {
 
 		if (!user) {
 			console.log('no user');
-			return res.redirect('/');
+			// return res.redirect('/');
 		}
 
 		user.comparePassword(pass, function(err, isMatch) {
@@ -79,9 +79,15 @@ router.post('/signin', function(req, res, next) {
 			}
 
 			if (isMatch) {
-				console.log('matched');
+				console.log('matched', user);
 				req.session.user = user;
-				return res.redirect('/');
+				res.json({
+					status: 1,
+					name: user.name,
+					_id: user._id,
+					role: user.role
+				});
+				// return res.redirect('/');
 			}else {
 				console.log('not matched');
 			}
@@ -89,9 +95,30 @@ router.post('/signin', function(req, res, next) {
 	});
 });
 
+router.get('/check', function(req, res, next) {
+	var user = req.session.user;
+	console.log(req.session);
+	if (user) {
+		res.json({
+			status: 1,
+			name: user.name,
+			_id: user._id,
+			role: user.role
+		});
+	}else {
+		res.json({
+			status: 0,
+			msg: '账号或密码错误'
+		})
+	}
+});
+
+
 router.get('/logout', function(req, res, next) {
 	delete req.session.user;
-	res.redirect('/');
+	res.json({
+		status: 1
+	})
 });
 
 // comment
