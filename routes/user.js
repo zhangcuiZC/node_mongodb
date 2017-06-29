@@ -39,7 +39,8 @@ router.post('/signup', function(req, res, next) {
 
 // validate a username
 router.post('/validate', function(req, res, next) {
-	var name = req.body;
+	var _user = req.body;
+	var name = _user.name;
 	User.find({name: name}, function(err, user) {
 		if (err) {
 			console.log(err);
@@ -67,9 +68,14 @@ router.post('/signin', function(req, res, next) {
 		if (err) {
 			console.log(err);
 		}
-
+		console.log(user);
 		if (!user) {
 			console.log('no user');
+			res.json({
+				status: 0,
+				msg: '账号或密码错误'
+			})
+			return false;
 			// return res.redirect('/');
 		}
 
@@ -89,7 +95,10 @@ router.post('/signin', function(req, res, next) {
 				});
 				// return res.redirect('/');
 			}else {
-				console.log('not matched');
+				res.json({
+					status: 0,
+					msg: '账号或密码错误'
+				})
 			}
 		});
 	});
