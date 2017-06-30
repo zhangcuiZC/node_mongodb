@@ -12,7 +12,6 @@ var MovieSchema = new mongoose.Schema({
 	language: String,
 	country: String,
 	summary: String,
-	flash: String,
 	poster: String,
 	year: Number,
 	meta: {

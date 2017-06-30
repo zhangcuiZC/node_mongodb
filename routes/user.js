@@ -5,7 +5,14 @@ var Comment = require('../models/comment');
 var mongoose = require('mongoose');
 var login_required = require('../libs/mw_login_required');
 
-/* GET user page. */
+// 获取用户列表，已改造
+router.get('/list', function(req, res, next) {
+	User.fetch(function(err, users) {
+		res.json(users);
+	});
+});
+
+// 注册用户，已改造
 router.post('/signup', function(req, res, next) {
 	var _user = req.body;
 	User.find({name: _user.name}, function(err, user) {
@@ -14,8 +21,6 @@ router.post('/signup', function(req, res, next) {
 		}
 
 		if (user.length) {
-			// console.log(user);
-			// return res.redirect('/');
 			res.json({
 				status: 0,
 				msg: '用户名已被注册'
@@ -27,7 +32,6 @@ router.post('/signup', function(req, res, next) {
 				if (err) {
 					console.log(err);
 				}
-				// res.redirect('/user/userlist');
 				res.json({
 					status: 1,
 					msg: '注册成功'
@@ -37,7 +41,7 @@ router.post('/signup', function(req, res, next) {
 	});
 });
 
-// validate a username
+// 验证用户是否可用，已改造
 router.post('/validate', function(req, res, next) {
 	var _user = req.body;
 	var name = _user.name;
@@ -59,6 +63,7 @@ router.post('/validate', function(req, res, next) {
 	});
 });
 
+// 登录，已改造
 router.post('/signin', function(req, res, next) {
 	var _user = req.body;
 	var name = _user.userName;
@@ -70,13 +75,11 @@ router.post('/signin', function(req, res, next) {
 		}
 		console.log(user);
 		if (!user) {
-			console.log('no user');
 			res.json({
 				status: 0,
 				msg: '账号或密码错误'
 			})
 			return false;
-			// return res.redirect('/');
 		}
 
 		user.comparePassword(pass, function(err, isMatch) {
@@ -85,15 +88,20 @@ router.post('/signin', function(req, res, next) {
 			}
 
 			if (isMatch) {
-				console.log('matched', user);
 				req.session.user = user;
-				res.json({
-					status: 1,
-					name: user.name,
-					_id: user._id,
-					role: user.role
-				});
-				// return res.redirect('/');
+				if (user.role > 1) {
+					res.json({
+						status: 1,
+						name: user.name,
+						_id: user._id,
+						role: user.role
+					});
+				}else {
+					res.json({
+						status: 0,
+						msg: '没有权限访问管理系统'
+					})
+				}
 			}else {
 				res.json({
 					status: 0,
@@ -104,9 +112,9 @@ router.post('/signin', function(req, res, next) {
 	});
 });
 
+// 检查登录状态，已改造
 router.get('/check', function(req, res, next) {
 	var user = req.session.user;
-	console.log(req.session);
 	if (user) {
 		res.json({
 			status: 1,
@@ -122,7 +130,7 @@ router.get('/check', function(req, res, next) {
 	}
 });
 
-
+// 登出，已改造
 router.get('/logout', function(req, res, next) {
 	delete req.session.user;
 	res.json({
@@ -130,7 +138,7 @@ router.get('/logout', function(req, res, next) {
 	})
 });
 
-// comment
+// 评论，未改造
 router.post('/comment', login_required, function(req, res, next) {
 	var _comment = req.body;
 
