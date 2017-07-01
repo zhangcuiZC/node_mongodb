@@ -171,15 +171,26 @@ router.delete('/list/:id', function(req, res, next) {
 				if (err) {
 					console.log(err);
 				}
-				category.movies.forEach(function(ele, idx) {
-					if (ele.toString() === id.toString()) {
-						category.movies.splice(idx, 1);
-					}
-				});
-				category.save(function(err, category) {
-					if (err) {
-						console.log(err);
-					}
+				if (category) {
+					category.movies.forEach(function(ele, idx) {
+						if (ele.toString() === id.toString()) {
+							category.movies.splice(idx, 1);
+						}
+					});
+					category.save(function(err, category) {
+						if (err) {
+							console.log(err);
+						}
+						Movie.remove({_id: id}, function(err, movie) {
+							if (err) {
+								console.log(err);
+								res.json({ status: 0 });
+							}else {
+								res.json({ status: 1 });
+							}
+						});
+					});
+				}else {
 					Movie.remove({_id: id}, function(err, movie) {
 						if (err) {
 							console.log(err);
@@ -188,7 +199,7 @@ router.delete('/list/:id', function(req, res, next) {
 							res.json({ status: 1 });
 						}
 					});
-				});
+				}
 			});
 		});
 	}else {

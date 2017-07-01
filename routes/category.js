@@ -4,7 +4,7 @@ var Movie = require('../models/movie');
 var Comment = require('../models/comment');
 var Category = require('../models/category');
 
-// 分类
+// xxxxxxxxxxxxxxxxxxxxx
 router.get('/', function(req, res, next) {
 	Category.find({}).populate({path: 'movies', options: {limit: 5}}).exec(function(err, categories) {
 		if (err) {
@@ -17,6 +17,7 @@ router.get('/', function(req, res, next) {
 	});
 });
 
+// xxxxxxxxxxxxxxxxxxxxx
 router.get('/movie/:id', function(req, res, next) {
 	var id = req.params.id;
 
@@ -70,6 +71,66 @@ router.get('/list', function(req, res, next) {
 		});
 		res.json(categoryList);
 	})
+});
+
+// 删除分类
+router.delete('/list/:id', function(req, res, next) {
+	var id = req.params.id;
+	if (id) {
+		Category.findById(id, function(err, category) {
+			var movie_ids = category.movies;
+			var length = movie_ids.length;
+
+			if (length) {
+				movie_ids.forEach(function(ele, idx) {
+					Movie.findById(ele, function(err, movie) {
+
+						if (movie) {
+							movie.category = '59570e6900e25f0a8306f64d';
+							movie.save(function(err, movie) {
+								if (err) {
+									res.json({ status: 0 });
+								}
+								Category.findById('59570e6900e25f0a8306f64d', function(err, defaultCate) {
+									defaultCate.movies.push(ele);
+									defaultCate.save(function(err, defaultCateSaved) {
+										if (err) {
+											res.json({ status: 0 });
+										}
+										if (idx === length - 1) {
+											Category.remove({ _id: id }, function(err, cate) {
+												if (err) {
+													res.json({ status: 0 });
+												}
+												res.json({ status: 1 });
+											});
+										}
+									});
+								});	
+							});
+						}else if (idx === length - 1) {
+							Category.remove({ _id: id }, function(err, cate) {
+								if (err) {
+									res.json({ status: 0 });
+								}
+								res.json({ status: 1 });
+							});
+						}
+					});
+				});
+			}else {
+				Category.remove({ _id: id }, function(err, cate) {
+					if (err) {
+						res.json({ status: 0 });
+					}
+					res.json({ status: 1 });
+				});
+			}
+			
+		});
+	}else {
+		res.json({ status: 0 });
+	}
 });
 
 module.exports = router;
