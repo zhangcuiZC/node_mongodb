@@ -114,7 +114,11 @@ router.post('/movie', function(req, res, next) {
 			});
 		}else {
 			_movie.save(function(err, movie) {
-				Category.findById(movieObj.category, function(err, category) {
+				movie_category = movieObj.category;
+				if (!movie_category) {
+					movie_category = '59570e6900e25f0a8306f64d';
+				}
+				Category.findById(movie_category, function(err, category) {
 					category.movies.push(movie._id);
 					category.save(function(err, category) {
 						if (err) {
@@ -157,20 +161,38 @@ router.get('/list', function(req, res, next) {
 	});
 });
 
-// 删除电影，暂未改造完成
+// 删除电影，改造完成
 router.delete('/list/:id', function(req, res, next) {
 	var id = req.params.id;
 	if (id) {
-		Movie.remove({_id: id}, function(err, movie) {
-			if (err) {
-				console.log(err);
-				res.json({ success: 0 });
-			}else {
-				res.json({ success: 1 });
-			}
+		Movie.findById(id, function(err, movie) {
+			var category_id = movie.category;
+			Category.findById(category_id, function(err, category) {
+				if (err) {
+					console.log(err);
+				}
+				category.movies.forEach(function(ele, idx) {
+					if (ele.toString() === id.toString()) {
+						category.movies.splice(idx, 1);
+					}
+				});
+				category.save(function(err, category) {
+					if (err) {
+						console.log(err);
+					}
+					Movie.remove({_id: id}, function(err, movie) {
+						if (err) {
+							console.log(err);
+							res.json({ status: 0 });
+						}else {
+							res.json({ status: 1 });
+						}
+					});
+				});
+			});
 		});
 	}else {
-		res.json({ success: 0 });
+		res.json({ status: 0 });
 	}
 });
 

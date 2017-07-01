@@ -7,7 +7,8 @@ var MovieSchema = new mongoose.Schema({
 	title: String,
 	category: {
 		type: ObjectId,
-		ref: 'Category'
+		ref: 'Category',
+		default: '59570e6900e25f0a8306f64d'
 	},
 	language: String,
 	country: String,
