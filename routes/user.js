@@ -24,7 +24,7 @@ router.post('/signup', function(req, res, next) {
 			res.json({
 				status: 0,
 				msg: '用户名已被注册'
-			})
+			});
 		}else {
 			var new_user = new User(_user);
 
@@ -35,7 +35,7 @@ router.post('/signup', function(req, res, next) {
 				res.json({
 					status: 1,
 					msg: '注册成功'
-				})
+				});
 			});
 		}
 	});
@@ -53,12 +53,12 @@ router.post('/validate', function(req, res, next) {
 			res.json({
 				status: 0,
 				msg: 'existed'
-			})
+			});
 		}else {
 			res.json({
 				status: 1,
 				msg: 'useable'
-			})
+			});
 		}
 	});
 });
@@ -78,7 +78,7 @@ router.post('/signin', function(req, res, next) {
 			res.json({
 				status: 0,
 				msg: '账号或密码错误'
-			})
+			});
 			return false;
 		}
 
@@ -126,7 +126,7 @@ router.get('/check', function(req, res, next) {
 		res.json({
 			status: 0,
 			msg: '账号或密码错误'
-		})
+		});
 	}
 });
 
@@ -135,11 +135,11 @@ router.get('/logout', function(req, res, next) {
 	delete req.session.user;
 	res.json({
 		status: 1
-	})
+	});
 });
 
 // 评论，未改造
-router.post('/comment', login_required, function(req, res, next) {
+router.post('/comment', function(req, res, next) {
 	var _comment = req.body;
 
 	if (_comment.cid) {
@@ -173,7 +173,21 @@ router.post('/comment', login_required, function(req, res, next) {
 			res.redirect('/movie/' + _comment.movie);
 		});
 	}
-	
+});
+
+// 删除用户
+router.get('/delete/:id', function(req, res, next) {
+	var user_id = req.params.id;
+	if (user_id) {
+		User.remove({ _id: user_id }, function(err, user) {
+			if (err) {
+				res.json({ status: 0 });
+			}
+			res.json({ status: 1 });
+		});
+	}else {
+		res.json({ status: 0 });
+	}
 });
 
 module.exports = router;
